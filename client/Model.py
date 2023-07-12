@@ -8,7 +8,7 @@ class Model():
     '''
     # static, might have to be calculated dynamically
     batch_size = 64
-    epochs = 3
+    epochs = 1
 
     def __init__(self, num_workers, idx, model, optimizer, device, topk, isEvil = False):
         self.num_workers = num_workers
@@ -124,6 +124,3 @@ class Model():
             
             
             
-        
-        
-        

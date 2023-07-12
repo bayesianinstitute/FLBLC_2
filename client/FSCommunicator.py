@@ -64,7 +64,8 @@ class FSCommunicator:
 
         return model, optimizer
     
-    def fetch_evaluation_models(self, worker_index, round, num_workers):
+    def fetch_evaluation_models(self, worker_index, round, num_workers,cluster_id):
+        
         print("Fetch Function")
         state_dicts = []
         
@@ -73,7 +74,7 @@ class FSCommunicator:
             print("worker",i)
             print("hash length",len(model_hashes))
             # Load the encrypted AES key from the disk
-            k="aes_key_encrypted_round_{}_index_{}.pem".format(round, worker_index)
+            k="keys_model/aes_key_clusterid_{}_encrypted_round_{}_index_{}.pem".format(cluster_id,round, worker_index)
             print(k)
             with open(k, "rb") as f:
                 encrypted_aes_key = f.read()
@@ -92,13 +93,13 @@ class FSCommunicator:
 
             # Load the encrypted model from the disk
          
-            model_filename1 = 'model_encrypted_round_{}_index_{}.pt'.format(round, worker_index)
+            model_filename1 = 'global_model_encryp/model_clusterid_{}_encrypted_round_{}_index_{}.pt'.format(cluster_id,round, worker_index)
 
             print(model_filename1)
             with open(model_filename1, "rb") as f:
                 encrypted_model = f.read()
                 
-            model_filename2 = 'Decriprited_model_round_{}_index_{}.pt'.format(round, worker_index)
+            model_filename2 = 'model_clusterid_{}_decriprited_round_{}_index_{}.pt'.format(cluster_id,round, worker_index)
             print(model_filename2)
             # Decrypt the encrypted model using the Fernet object
             decrypted_model = fernet.decrypt(encrypted_model)
@@ -111,14 +112,10 @@ class FSCommunicator:
                 model = torch.load(model_filename2)
                 state_dicts.append(model)
             
-            
-            
-    
-        
       
         return state_dicts  
     
-    def push_model(self, state_dict, worker_index, round, num_workers):
+    def push_model(self, state_dict, worker_index, round, clusterid,num_workers):
         
         # Clear the model_hashes list if it has reached the number of workers
 
@@ -128,7 +125,7 @@ class FSCommunicator:
                 
         # Save the state_dict to a file
         print("Pushing Model")
-        model_filename = 'model_round_{}_index_{}.pt'.format(round, worker_index)
+        model_filename = 'model_clusterid_{}_round_{}_index_{}.pt'.format(clusterid,round, worker_index)
         torch.save(state_dict, model_filename)
         print("MODEL SAVE TO LOCAL")
        
@@ -151,8 +148,8 @@ class FSCommunicator:
         )
         
         
-        model_filename1 = 'model_encrypted_round_{}_index_{}.pt'.format(round, worker_index)
-        k="aes_key_encrypted_round_{}_index_{}.pem".format(round, worker_index)
+        model_filename1 = 'global_model_encryp/model_clusterid_{}_encrypted_round_{}_index_{}.pt'.format(clusterid,round, worker_index)
+        k="keys_model/aes_key_clusterid_{}_encrypted_round_{}_index_{}.pem".format(clusterid,round, worker_index)
         # Save encrypted file and encrypted AES key to disk
         with open(model_filename1, "wb") as f:
             f.write(encrypted_file)
